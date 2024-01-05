@@ -1,28 +1,17 @@
 package com.hotel.elastichotelsyncservice.Model;
 
 public class ElasticRoomType {
-    private Long id;
     private String name;
     private int numRooms;
     private String price;
 
-    public ElasticRoomType(Long id, String name, int numRooms, String price) {
-        this.id = id;
+    public ElasticRoomType(String name, int numRooms, String price) {
         this.name = name;
         this.numRooms = numRooms;
         this.price = price;
     }
 
     public ElasticRoomType(){}
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;

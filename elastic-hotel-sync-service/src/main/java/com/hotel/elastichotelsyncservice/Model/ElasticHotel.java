@@ -7,7 +7,6 @@ import java.util.List;
 @Document(indexName = "hotels")
 public class ElasticHotel {
     private String id;
-    @Field(type = FieldType.Text, name = "name")
     private String name;
     private List<ElasticRoomType> roomTypeList;
     private String description;
