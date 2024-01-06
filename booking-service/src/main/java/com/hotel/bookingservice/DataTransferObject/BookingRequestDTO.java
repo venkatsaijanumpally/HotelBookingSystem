@@ -7,7 +7,7 @@ public class BookingRequestDTO implements RequestDTO{
     @JsonProperty(value = ConstantValues.HOTEL_BOOKING_USERID)
     private String userID;
     @JsonProperty(value = ConstantValues.HOTEL_BOOKING_HOTELNAME)
-    private String hotelName;
+    private String hotelId;
     @JsonProperty(value = ConstantValues.HOTEL_BOOKING_CHECKIN_DATE)
     private String checkinDate;
     @JsonProperty(value = ConstantValues.HOTEL_BOOKING_CHECKOUT_DATE)
@@ -26,12 +26,12 @@ public class BookingRequestDTO implements RequestDTO{
         this.userID = userID;
     }
 
-    public String getHotelName() {
-        return hotelName;
+    public String getHotelId() {
+        return hotelId;
     }
 
-    public void setHotelName(String hotelName) {
-        this.hotelName = hotelName;
+    public void setHotelId(String hotelId) {
+        this.hotelId = hotelId;
     }
 
     public String getCheckinDate() {
@@ -62,7 +62,7 @@ public class BookingRequestDTO implements RequestDTO{
     public String toString() {
         return "BookingRequestDTO{" +
                 "UserID='" + userID + '\'' +
-                ", hotelName='" + hotelName + '\'' +
+                ", hotelName='" + hotelId + '\'' +
                 ", checkinDate='" + checkinDate + '\'' +
                 ", checkOutDate='" + checkOutDate + '\'' +
                 ", roomType='" + roomType + '\'' +

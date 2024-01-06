@@ -1,6 +1,5 @@
-package com.hotel.hotelmanagementservice.Persistence;
+package com.hotel.bookingservice.Persistence;
 
-import com.hotel.hotelmanagementservice.Model.RoomType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,18 +10,11 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
 @Component
 public class QueryRunner {
     public static JdbcTemplate jdbcTemplate;
-
-    private static final String HOTELS_INFO_TABLE = "hotels_info";
-    private static final String ROOM_INFO_TABLE = "room_info";
-    private static final String ROOM_STATUS_TABLE = "room_status";
-    private static final String BOOKING_INFO_TABLE = "booking_info";
-    private static final String[] ROOM_INFO_PARAMETERS = {"hotel_id", "room_type", "number_of_rooms", "price"};
-    private static final String[] ROOM_STATUS_PARAMETER = {"room_id", "room_type", "status"};
-    private static final String[] HOTELS_INFO_PARAMETER = {"id", "name", "description", "location"};
+    private static final String USER_INFO_TABLE = "user_info";
+    private static final String[] USER_INFO_PARAMETERS = {"user_id", "name", "address"};
     private static final Logger logger = LoggerFactory.getLogger(QueryRunner.class);
 
     @Autowired
@@ -55,7 +47,7 @@ public class QueryRunner {
         // Create the SQL statement with dynamic parameters
         String placeholders = String.join(", ", java.util.Collections.nCopies(values.length, "?"));
         String sql = "INSERT INTO " + tableName + " VALUES (" + placeholders + ")";
-        logger.info("Insert query: " + sql + " Values: " + Arrays.toString(values));
+        logger.info("Insert query: " + sql + " Values: "+ Arrays.toString(values));
         // Execute the update
         jdbcTemplate.update(sql, (Object[]) values);
     }
@@ -135,74 +127,14 @@ public class QueryRunner {
         return jdbcTemplate.query(sql, rowMapper);
     }
 
-    public static boolean hotelDoesNotExist(String hotel) {
-        return !tableExists(hotel);
-    }
-
-    public static boolean tableDoesNotExist(String table) {
-        return !tableExists(table);
-    }
-
     private static boolean tableExists(String tableName) {
+        System.out.println("CHECK");
         String sql = "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = ?";
         System.out.println(sql);
         return jdbcTemplate.queryForObject(sql, Integer.class, tableName) > 0;
     }
 
-    public static void insertRoomStatusRecords(String insertSql, List<RoomType> roomTypeList, String hotelId) {
-        int roomId = 1;
-        for (RoomType roomType : roomTypeList) {
-            for (int i = 0; i < roomType.getNumRooms(); i++) {
-                String hotelRoomId = hotelId + roomId;
-                jdbcTemplate.update(insertSql, hotelRoomId, roomType.getName(), "available");
-                roomId++;
-            }
-        }
-    }
-
-    public static void insertHotelInfoRecord(String[] values) {
-        createTable(HOTELS_INFO_TABLE, HOTELS_INFO_PARAMETER, values);
-    }
-
-    public static void deleteTableIfExist(String table) {
-        if (tableExists(table)) {
-            String dropSql = "DROP TABLE " + table;
-            logger.info("Executing SQL: {}", dropSql);
-            jdbcTemplate.execute(dropSql);
-            logger.info("Table '{}' deleted successfully.", table);
-        } else {
-            logger.info("Table '{}' does not exist.", table);
-        }
-    }
-
-    private static void deleteRecordIfExist(String tableName, String[] parameters, String[] values) {
-        if (recordExists(tableName, parameters, values))
-            deleteRecord(tableName, parameters, values);
-    }
-
-    public static void deleteHotelRecord(String hotelID) {
-        String[] parameters = {"id"};
-        String[] values = {hotelID};
-
-        deleteRecordIfExist(HOTELS_INFO_TABLE, parameters, values);
-    }
-
-    public static void insertRoomInfoRecord(String infoTable, List<RoomType> roomTypeList, String hotelId) {
-        logger.info("insertRoomInfoRecord hotelId: " + hotelId);
-        for (RoomType roomType : roomTypeList) {
-            String[] values = {hotelId, roomType.getName(), String.valueOf(roomType.getNumRooms()), roomType.getPrice()};
-            logger.info(Arrays.toString(ROOM_INFO_PARAMETERS) + "   " + Arrays.toString(values));
-            insertRecord(infoTable, ROOM_INFO_PARAMETERS, values);
-        }
-    }
-
-    public static void deleteRoomStatusRecords(String hotelId) {
-        String deleteSql = "DELETE FROM " + ROOM_STATUS_TABLE + " WHERE room_id LIKE ?";
-        jdbcTemplate.update(deleteSql, hotelId + "%");
-    }
-
-    public static void deleteRoomInfoRecords(String hotelId) {
-        String deleteSql = "DELETE FROM room_info WHERE hotel_id = ?";
-        jdbcTemplate.update(deleteSql, hotelId);
+    public static boolean tableDoesNotExist(String table) {
+        return !tableExists(table);
     }
 }

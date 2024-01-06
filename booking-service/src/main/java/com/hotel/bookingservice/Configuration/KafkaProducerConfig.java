@@ -1,5 +1,6 @@
 package com.hotel.bookingservice.Configuration;
 
+import com.hotel.bookingservice.Model.Booking;
 import com.hotel.bookingservice.Model.HotelDetailsKafka;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -19,7 +20,7 @@ public class KafkaProducerConfig {
     @Value(value = "${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
     @Bean
-    public ProducerFactory<String, HotelDetailsKafka> producerFactory() {
+    public ProducerFactory<String, Booking> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
@@ -34,7 +35,7 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, HotelDetailsKafka> kafkaTemplate() {
+    public KafkaTemplate<String, Booking> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }

@@ -29,7 +29,7 @@ public class BookingRecord {
 
     public BookingRecord(BookingRequestDTO bookingRequestDTO) {
         this.userId=bookingRequestDTO.getUserID();
-        this.hotel= bookingRequestDTO.getHotelName();
+        //this.hotel= bookingRequestDTO.getHotelName();
         this.checkinDate=bookingRequestDTO.getCheckinDate();
         this.checkoutDate= bookingRequestDTO.getCheckOutDate();
         this.roomType = bookingRequestDTO.getRoomType();

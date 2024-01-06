@@ -19,20 +19,24 @@ import java.util.List;
 @Component
 public class RegisterHotelService {
     private static final String HOTELS_INFO_TABLE = "hotels_info";
+    private static final String ROOM_INFO_TABLE = "room_info";
+    private static final String ROOM_STATUS_TABLE = "room_status";
+    private static final String BOOKING_INFO_TABLE = "booking_info";
     Logger logger = LoggerFactory.getLogger(RegisterHotelService.class);
     @Autowired
     private KafkaTemplate<String, Hotel> hotelKafkaTemplate;
 
+    static {
+        DatabaseSetupManager.createHotelInfoTableIfNotExist();
+        DatabaseSetupManager.createRoomInfoTableIfNotExist();
+        DatabaseSetupManager.createRoomStatusTableIfNotExist();
+        DatabaseSetupManager.createBookingInfoTableIfNotExist();
+    }
+
     public Hotel saveHotel(Hotel hotel) {
+        System.out.println("CHECK");
         String hotelId = String.valueOf(hotel.getId());
-        String detailsTable = hotelId + "_hotel_details";
-        String infoTable = hotelId + "_room_info";
-        String availabilityTable = hotelId + "_rooms_availability";
-        String roomStatusTable = hotelId + "_room_status";
-        String bookingStatusTable = hotelId + "_booking_status";
-        String bookingInfoTable = hotelId + "_booking_info";
-        System.out.println("Creating tables");
-        performTransactionCreateHotelTables(detailsTable, infoTable, roomStatusTable, bookingInfoTable, hotel);
+        performTransactionCreateHotelTables(hotel);
         hotelKafkaTemplate.send("hotels_topic", hotel);
         return hotel;
     }
@@ -54,32 +58,20 @@ public class RegisterHotelService {
         }
     }
 
-    private void performTransactionCreateHotelTables(String detailsTable, String infoTable, String roomStatusTable, String bookingInfoTable, Hotel hotel) {
+    private void performTransactionCreateHotelTables(Hotel hotel) {
         try {
-            if(hotelsTableDoesNotExist(HOTELS_INFO_TABLE))
-                DatabaseSetupManager.createHotelInfoTable();
-            //createHotelDetailsTable(detailsTable);
-            DatabaseSetupManager.createHotelRoomInfoTable(infoTable);
-            DatabaseSetupManager.createRoomStatusTable(roomStatusTable);
-            DatabaseSetupManager.createBookingInfoTable(bookingInfoTable);
-
-            insertRoomStatusRecords(roomStatusTable, hotel.getRoomTypeList());
             insertHotelInfoRecord(hotel);
-            insertRoomInfoRecords(infoTable, hotel);
+            insertRoomStatusRecords(hotel.getId(), ROOM_STATUS_TABLE, hotel.getRoomTypeList());
+            insertRoomInfoRecords(ROOM_INFO_TABLE, hotel);
         }
         catch (Exception e){
+            //TODO Have not tested
             logger.info("Exception when registering hotel " + hotel.getName() + " : " + e.getMessage());
-            //QueryRunner.deleteTableIfExist(detailsTable);
-            QueryRunner.deleteTableIfExist(infoTable);
-            QueryRunner.deleteTableIfExist(roomStatusTable);
-            QueryRunner.deleteTableIfExist(bookingInfoTable);
             QueryRunner.deleteHotelRecord(String.valueOf(hotel.getId()));
+            QueryRunner.deleteRoomStatusRecords(hotel.getId());
+            QueryRunner.deleteRoomInfoRecords(hotel.getId());
             throw e;
         }
-    }
-
-    private boolean hotelsTableDoesNotExist(String hotelsTable) {
-        return QueryRunner.hotelDoesNotExist(hotelsTable);
     }
 
     private void insertHotelInfoRecord(Hotel hotel) {
@@ -88,11 +80,11 @@ public class RegisterHotelService {
     }
 
     private void insertRoomInfoRecords(String infoTable, Hotel hotel) {
-        QueryRunner.insertRoomInfoRecord(infoTable, hotel.getRoomTypeList());
+        QueryRunner.insertRoomInfoRecord(infoTable, hotel.getRoomTypeList(), hotel.getId());
     }
 
-    private void insertRoomStatusRecords(String roomStatusTable, List<RoomType> roomTypeList) {
+    private void insertRoomStatusRecords(String hotelId, String roomStatusTable, List<RoomType> roomTypeList) {
         String insertSql = "INSERT INTO " + roomStatusTable + " (room_id, room_type, status) VALUES (?, ?, ?)";
-        QueryRunner.insertRoomStatusRecords(insertSql, roomTypeList);
+        QueryRunner.insertRoomStatusRecords(insertSql, roomTypeList, hotelId);
     }
 }
